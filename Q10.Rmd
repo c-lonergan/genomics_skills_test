@@ -1,0 +1,132 @@
+---
+title: 'Skills Test: Question 10'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+It is possible to get an approximate value of pi by randomly adding points to a square with a circle inscribed in it.
+As more points are added, the ratio of points inside the circle to the total number of points approximates pi / 4.
+Using R, please demonstrate how increasing the number of points leads to better estimates of pi. 
+Output the results as a graph showing convergence towards the true value.
+
+## Visual representation of pi estimation
+
+```{r}
+plot_pi_est = function(n){
+  # randomly generate x,y coordinates uniformly
+  x = runif(n, min=-1, max = 1)
+  y = runif(n, min=-1, max = 1)
+  # empty sets to populate with coordinates
+  in_x = c()
+  in_y = c()
+  out_x = c()
+  out_y = c()
+  # loop through each point
+  for (i in 1:n) {
+    # if point lies outside circle, add to "out" set
+    if (x[i]^2+y[i]^2 > 1) {
+      out_x = c(out_x, x[i])
+      out_y = c(out_y, y[i])
+    # otherwise add to "in" set
+    } else {
+      in_x = c(in_x, x[i])
+      in_y = c(in_y, y[i])
+    }
+  }
+  
+  # estimate pi by formula given
+  p = 4*length(in_x)/n
+  
+  # initialize plot
+  plot(c(-1, 1), 
+       c(-1, 1), 
+       main = paste("Estimating pi with ", n, " points\n", "pi ~ ", round(p,3), sep = ""),
+       col = "white",
+       xlab = "x", 
+       ylab = "y", 
+       xlim = c(-1,1),
+       ylim = c(-1,1))
+  # add points
+  points(cbind(in_x,in_y), pch = 20, col = "blue")
+  points(cbind(out_x,out_y), pch = 20, col = "red")
+  # angles for drawing points around the circle
+  theta = seq(0, 2*pi, length = 1000)
+  # draw the circle, centre (0,0), radius 1
+  lines(x = cos(theta), y = sin(theta), lwd = 2.5)
+}
+```
+
+```{r}
+# test function works
+plot_pi_est(1000)
+```
+
+## pi estimation function for convergence graph
+
+```{r}
+estimate_pi = function(n){
+  # randomly generate x,y coordinates uniformly
+  x = runif(n, min=-1, max=1)
+  y = runif(n, min=-1, max=1)
+  # empty set to populate with "in" x coordinates
+  in_x = c()
+  # loop through each point
+  for (i in 1:n) {
+    # if point lies inside circle, add to "in" set
+    if (x[i]^2+y[i]^2 <= 1) {
+      in_x = c(in_x, x[i])
+    }
+  }
+  # estimate pi by formula given
+  return(4*length(in_x)/n)
+}
+```
+
+```{r}
+# test function works
+estimate_pi(1000)
+```
+
+## Demonstrate convergence
+
+```{r}
+# demonstrate estimates converge to pi
+# range of inputs
+N = c(10,100,1000,10000,50000)
+# vector of pi estimates
+pi_est = round(unlist(lapply(N, estimate_pi)),3)
+# vector of differences to true pi
+diff = round(abs(pi-pi_est),3)
+# display convergence table
+cbind(N,pi_est,diff)
+```
+
+```{r}
+# pi estimation plot over several inputs
+for (i in N) {
+  plot_pi_est(i)
+}
+```
+
+```{r}
+n = 3000
+# generate pi estimates up to n
+pi_list = unlist(lapply(1:n, estimate_pi))
+# plot estimates against n
+plot(1:n, 
+     pi_list,
+     main = paste("Convergence of pi estimates\n", n, "th pi ~ ", round(pi_list[n],3), sep = ""),
+     xlab = "n",
+     ylab = "pi estimate",
+     pch = 4)
+# dashed line represents true pi
+abline(h = pi, 
+       col = "red", 
+       lwd = 2.5, 
+       lty = 2)
+```

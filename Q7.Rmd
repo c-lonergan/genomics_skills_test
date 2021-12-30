@@ -1,0 +1,94 @@
+---
+title: 'Skills Test: Question 7'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Lions are born with pink noses. As they grow, black spots start to appear in their nose. 
+Data on this can be pulled using the following R code.
+
+```{r}
+lion <- read.csv(url("http://www.zoology.ubc.ca/~schluter/WhitlockSchluter/wp-content/data/chapter17/chap17e1LionNoses.csv"))
+```
+
+After pulling the data ‘lion’, plot the relationship between age and proportion of black spots. 
+Next, predict how old a lion is that has a 0.5 proportion of black in its nose.
+
+```{r}
+# plot data
+plot(x = lion$ageInYears, 
+     y = lion$proportionBlack,
+     main = "Proportion of Black Spots vs. Age",
+     col = "red",
+     pch = 18,
+     xlim = c(0,14),
+     ylim = c(0,0.8),
+     xlab = "Age (Years)", 
+     ylab = "Black spot proportion")
+```
+
+Scatterplot appears to describe a linear relationship, though it is possible a log-linear model is more appropriate.
+
+```{r}
+# predicting age as a function of proportion
+print("ageInYears ~ proportionBlack")
+summary(lm(lion$ageInYears ~ lion$proportionBlack))$coefficients
+cat("\n")
+print("ageInYears ~ log(proportionBlack)")
+summary(lm(lion$ageInYears ~ log(lion$proportionBlack)))$coefficients
+cat("\n")
+print("log(ageInYears) ~ proportionBlack")
+summary(lm(log(lion$ageInYears) ~ lion$proportionBlack))$coefficients
+```
+
+"ageInYears ~ log(proportionBlack)" has lowest associated p-values for both gradient and intercept, so will choose this transformation as the basis of the log-linear model.
+
+```{r}
+# log transform black spot proportions
+lion$logProportion = log(lion$proportionBlack)
+# build linear model: log proportion as a predictor of age
+lion_fit = lm(lion$ageInYears ~ lion$logProportion)
+summary(lion_fit)
+```
+
+Predict age of lion with 50% black spots.
+
+```{r}
+lp = log(0.5)                  # log transform 
+c = lion_fit$coefficients[[1]] # intercept
+m = lion_fit$coefficients[[2]] # gradient
+
+# interpolate how old a lion is that has a 0.5 proportion of black in its nose.
+middle_age = m*lp + c
+middle_age
+```
+
+Visualise interpolation.
+
+```{r, warning=FALSE}
+# scatter plot
+plot(x = lion$ageInYears,
+     y = lion$logProportion,
+     main = "Predicting lion age with 50% black spots",
+     col = "red",
+     pch = 18,
+     xlab = "Age (Years)", 
+     ylab = "ln( Black spot proportion )", 
+     xlim = c(0,14),
+     ylim = c(-2.5,0))#
+# indicate interpolation at 50% black spots
+abline(v = middle_age, h = lp, lty = 3)
+points(middle_age, lp)
+# max/min values for interpolation
+y = range(lion$logProportion)
+# predict() returns the min/max age values predicted by lm()
+x = range(predict(lion_fit, data.frame(logProportion = y)))
+# lines() draws a line between the min/max x,y values
+lines(x = x, y = y)
+```
+

@@ -1,0 +1,151 @@
+---
+title: 'Skills Test: Question 3'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Please annotate the code and fill in the blanks
+
+```{r}
+#...(...(dplyr))
+#...(...(tidyr))
+# not sure what double brackets (( )) are for
+
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+# returns the cumulative distribution function of the hypergeometric distribution
+hype<-function(x, k, m, n){
+  hyp<-sum(stats::dhyper(x:k, m, n, k))
+  return (hyp)
+}
+
+# x:k = number of white balls drawn without replacement
+# k = number of white balls in urn
+# m = number of black balls in urn
+# n = number of balls drawn in (0,1,...,k+m)
+
+hype(2,4,4,5)
+```
+
+```{r}
+d <- readRDS("../d.rds") # load Rdata
+head(d)                  # appears to be lists of transcription factors
+```
+
+```{r}
+dUnnest <- d %>%
+  dplyr::mutate(TF = ...(as.character(TF), ","))%>%
+  tidyr::...(TF)%>%
+  group_by(id) %>%
+  dplyr::...(countTotal=n()) 
+head(dUnnest)
+```
+
+```{r}
+dTable = as.data.frame(...(dUnnest$TF))
+head(dTable)
+```
+
+```{r}
+mergedDF<- dplyr::full_join(dUnnest, dTable, by=...)
+mergedDF <- mergedDF[,c("TF","countTotal","Freq")]
+mergedDF <- mergedDF%>%
+  ...(TF)%>%
+  mutate(countTotal = max(countTotal))
+mergedDF <- mergedDF[!...(mergedDF),]
+head(mergedDF)
+```
+
+```{r}
+colnames(mergedDF)<-c("GeneLocus", "countTotal", "countSig")
+mergedDF <- mergedDF %>%
+  ...::column_to_rownames(var="GeneLocus")
+
+mVal <-sum(mergedDF$countSig)
+nVal<-(sum(mergedDF$countTotal)-mVal)
+
+res1<-unlist(Map(..., mergedDF$countSig, mergedDF$countTotal, ..., nVal))
+mergedDF$HyperG_Stats<-res1
+mergedDF$FDR_HyperG<-p.adjust(res1,method="BH", n=length(res1))
+head(mergedDF)
+
+```
+
+Expected Output
+##       id
+## 1 id_1_a
+## 2 id_2_b
+## 3 id_2_b
+## 5 id_3_b
+## 6 id_3_b
+## 4 id_4_b
+##                                                                                                                                                                                                                                                                                                                                                                                                 TF
+## 1                                                                                                                                                                                                                                                                                                                                            CHD8,ESR1,RELA,MAZ,XBP1,ZNF19,CTCF,STAG1,ZFX,WT1,CTCF
+## 2                                                                                                                                                                                                                                                                                                                                                                               HOXB13,CEBPG,CEBPB
+## 3                                                                                                                                                                                                                                       ZNF362,ZNF384,OGG1,BCL6,ZBTB40,ELF4,C11orf30,RXR,MAFG,AR,ZNF316,MAFK,GRHL3,DUX4,TEAD1,PRDM1,ZNF512,ZNF366,FOXA1,RELA,ZNF143,XBP1,GTF2B,TEAD3,CREB1,MYC,ZFX
+## 5                                                                                                                                                                                                                                                                                                                                                                              SP140,ZBTB33,ZNF384
+## 6 ZNF121,BCOR,ZNF770,SP140,BRD4,WT1,CEBPB,CEBPG,CEBPA,NFIL3,LMO2,HLF,MYC,FLI1,CBX2,ELF3,BRD4,CHD7,SOX2,SCRT2,TAL1,RELA,JUN,PAF1,FOXO1,RBPJ,JUNB,FOXP2,NR3C1,RUNX1,PAF1,ZNF341,PGR,ZFX,BRD2,MAX,CDK8,MYC,BRD4,ZBTB48,AR,PRPF4,NIPBL,WT1,RELA,ERG3,CHD8,SMARCA4,ZFHX2,SP140,ERG2,SRF,NEUROG2,RAD21,STAG1,ZNF592,CTCF,KLF9,XBP1,MYCN,RUNX3,YY1,PHIP,SOX4,TP53,EBF1,SMC1A,RUNX2,POU5F1,GRHL3,CTCFL,AHR
+## 4                                                                                                                                                                                                                                                                                                                                                                                      GTF2B,FOXA1
+## # A tibble: 6 × 3
+## # Groups:   id [1]
+##   id     TF    countTotal
+##   <chr>  <chr>      <int>
+## 1 id_1_a CHD8          11
+## 2 id_1_a ESR1          11
+## 3 id_1_a RELA          11
+## 4 id_1_a MAZ           11
+## 5 id_1_a XBP1          11
+## 6 id_1_a ZNF19         11
+##    Var1 Freq
+## 1   AHR    4
+## 2    AR    4
+## 3  ARNT    1
+## 4 BACH1    1
+## 5  BCL6    4
+## 6 BCL6B    1
+## # A tibble: 6 × 3
+## # Groups:   TF [6]
+##   TF    countTotal  Freq
+##   <chr>      <int> <int>
+## 1 CHD8         102     4
+## 2 ESR1         102     2
+## 3 RELA         102     7
+## 4 MAZ           11     1
+## 5 XBP1         102     4
+## 6 ZNF19         11     1
+##       countTotal countSig HyperG_Stats FDR_HyperG
+## CHD8         102        4   0.16912031  0.8876704
+## ESR1         102        2   0.63832844  0.8876704
+## RELA         102        7   0.00579439  0.4114017
+## MAZ           11        1   0.20931099  0.8876704
+## XBP1         102        4   0.16912031  0.8876704
+## ZNF19         11        1   0.20931099  0.8876704
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

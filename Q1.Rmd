@@ -1,0 +1,52 @@
+---
+title: 'Skills Test: Question 1'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+If we execute following commands (written below), what will be the output?
+
+```{r}
+# 
+f <- function(x) {
+      g <- function(y) {
+        y * z
+      }
+      z <- 4
+      x + g(x)
+}
+y <- 5
+z <- 10
+f(8)
+```
+
+`z <- 10` is unnecessary as `z <- 4` is embedded within the function, and `y <- 5` is unnecessary since `y=x` is implied by `f(g(x))`. 
+`f(x)` is isomorphic to the function `h(x) = 5x`:
+
+```{r}
+h = function(x){
+  return(5*x)
+}
+h(8)
+```
+
+```{r}
+test = T
+for (i in -10000:10000) {
+  if (f(i)!=h(i)) {
+    test <- F
+  }
+}
+if (test==F) {
+  print("f(x), h(x) different")
+} else {
+  print("f(x), g(x) identical")
+}
+```
+
+The output of `f(x)` is `5x`.

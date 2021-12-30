@@ -1,0 +1,159 @@
+---
+title: 'Skills Test: Question 11'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Read data from “students_data.csv”. This dataset has information about the name of students in a given class, their height, weight and smoking habits.
+
+```{r}
+# read data
+students = read.csv("data/students_data.csv")
+```
+
+## Visualise the relationship of the weight of students as a function of the smoking habits.
+
+```{r}
+# bmi more appropriate than direct weight 
+# since weight alone does not account for height
+students$BMI = students$Weight_Kg/(students$Height_cm/100)^2
+```
+
+```{r}
+# split data by smoking habits
+smokers = students[students$SmokingHabits == "Yes",]
+occsmokers = students[students$SmokingHabits == "Occasional",]
+nonsmokers = students[students$SmokingHabits == "No",]
+```
+
+```{r}
+# boxplot of each cohort's weight
+boxplot(smokers$Weight_Kg, 
+        occsmokers$Weight_Kg,
+        nonsmokers$Weight_Kg,
+        names=c("Yes","Occasional","No"),
+        col = c("red", "orange", "green"),
+        main = "Boxplot of Weight by Smoking Habits",
+        xlab = "Smoking Habits",
+        ylab = "Weight (kg)")
+```
+
+There appears to be a reduction in weight as smoking decreases.
+
+```{r}
+# boxplot of each cohort's BMI
+boxplot(smokers$BMI, 
+        occsmokers$BMI,
+        nonsmokers$BMI,
+        names=c("Yes","Occasional","No"),
+        col = c("red", "orange", "green"),
+        main = "Boxplot of BMI by Smoking Habits",
+        xlab = "Smoking Habits",
+        ylab = "BMI (kgm-2)")
+```
+
+The regular smokers appear to have an increased BMI also. However, the sample sizes are quite small and statistically insignificant. 
+
+## Compute the mean weight of non-smokers, mean weight of occasional smokers, and mean weight of smokers. Does it seem there is a difference in means?
+
+```{r}
+mean(smokers$Weight_Kg)
+mean(occsmokers$Weight_Kg)
+mean(nonsmokers$Weight_Kg)
+```
+
+```{r}
+mean(smokers$BMI)
+mean(occsmokers$BMI)
+mean(nonsmokers$BMI)
+```
+
+The regular smokers appear to have increased mean weight and BMI.
+
+## Perform a statistical test to see if if the mean weights depend on the smoking habits.
+
+```{r}
+# test mean weight 
+smok_occs_w = t.test(smokers$Weight_Kg, occsmokers$Weight_Kg, alternative = "g")
+smok_nons_w = t.test(smokers$Weight_Kg, nonsmokers$Weight_Kg, alternative = "g")
+smok_occs_w
+cat("\n")
+smok_nons_w
+```
+
+```{r}
+# check p-values
+smok_occs_w$p.value
+smok_nons_w$p.value
+```
+
+Mean weights are not significantly different. Smoker's mean weight differs to that of the occasional smokers with a p-value of `0.14`, and to that of the non-smokers with a p-value of `0.06`.
+
+Both p-values are greater than `0.05`, so the null hypothesis that the means differ cannot be rejected at `95%` confidence. 
+
+```{r}
+# test mean BMI
+smok_occs_b = t.test(smokers$BMI, occsmokers$BMI, alternative = "g")
+smok_nons_b = t.test(smokers$BMI, nonsmokers$BMI, alternative = "g")
+smok_occs_b
+cat("\n")
+smok_nons_b
+```
+
+```{r}
+# check p-values
+smok_occs_b$p.value
+smok_nons_b$p.value
+```
+
+Similarly, mean BMI scores do not differ significantly, since associated p-values are `0.12`,`0.11 > 0.05`.
+
+## Test if there is an interaction between weights, height and smoking habits.
+
+```{r}
+# boxplot of each cohort's height
+boxplot(smokers$Height_cm, 
+        occsmokers$Height_cm, 
+        nonsmokers$Height_cm,
+        names=c("Yes","Occasional","No"),
+        col = c("red", "orange", "green"),
+        main = "Boxplot of Height by Smoking Habits",
+        xlab = "Smoking Habits",
+        ylab = "Height (cm)")
+```
+
+```{r}
+# boxplot of each cohort's weight
+boxplot(smokers$Weight_Kg, 
+        occsmokers$Weight_Kg,
+        nonsmokers$Weight_Kg,
+        names=c("Yes","Occasional","No"),
+        col = c("red", "orange", "green"),
+        main = "Boxplot of Weight by Smoking Habits",
+        xlab = "Smoking Habits",
+        ylab = "Weight (kg)")
+```
+
+```{r}
+# boxplot of each cohort's BMI
+boxplot(smokers$BMI, 
+        occsmokers$BMI,
+        nonsmokers$BMI,
+        names=c("Yes","Occasional","No"),
+        col = c("red", "orange", "green"),
+        main = "Boxplot of BMI by Smoking Habits",
+        xlab = "Smoking Habits",
+        ylab = "BMI (kgm-2)")
+```
+
+While it appears that weight increases with increased smoking habits, the students who smoke regularly happen to also be taller than occasional and non-smokers.
+Therefore, the smokers also naturally weigh more.
+To account for this, we can get a clearer picture of the association of weight and smoking status by measuring the students' BMI, which also takes account of height.
+
+As we have seen, mean BMI does not differ significantly between cohorts, though there appears to be a noticeable subjective increase in BMI with smoking frequency.
+In summary, more data is needed to investigate the relationship between weight and smoking habits, since there are only 3 regular and 3 occasional smokers in the study, so these results are not statistically significant.

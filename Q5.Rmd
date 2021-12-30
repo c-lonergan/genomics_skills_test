@@ -1,0 +1,103 @@
+---
+title: 'Skills Test: Question 5'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The following R function generates a data frame with a given number of rows. The function has been written inefficiently. As a result, for small numbers of rows (~ 1000) it runs reasonably quickly, but for larger numbers of rows (> 100000) it becomes unmanageably slow.
+Please write an improved function that returns the same output but faster.
+
+```{r}
+# old function
+make_data_frame <- function(number_of_rows) {
+  
+  i <- 0
+  n <- c()
+  while (i < number_of_rows) {
+    i <- i + 1
+    n <- c(n, i)
+  }
+  
+  i <- 0
+  x <- c()
+  while (i < number_of_rows) {
+    i <- i + 1
+    this_n <- 0
+    for (j in 1:n[[i]]) {
+      this_n = this_n + n[[i]]
+    }
+    x <- c(x, this_n)
+  }
+  
+  y <- 1
+  for (i in 2:length(x)) {
+    total <- 0
+    for (j in 1:i) {
+      total <- total + x[[j]] 
+    }
+    total
+    
+    y <- c(y, total)
+  }
+  
+  output_df <-
+    data.frame(n, x, y)
+  
+  z <- 0
+  for (i in 1:(nrow(output_df) - 1)) {
+    z <- c(z, output_df$y[[i]])
+  }
+  
+  output_df$z <- z
+  
+  a <- c()
+  i <- 1
+  taking_means <- TRUE
+  while (taking_means == TRUE) {
+    a <- c(a, ((output_df$x[[i]] + output_df$y[[i]] + output_df$z[[i]]) / 3))
+    i <- i + 1
+    if (i > nrow(output_df)) {
+      taking_means <- FALSE
+    }
+  }
+  output_df$a <- a
+  
+  return(output_df)  
+}
+
+s = Sys.time()                                   # record timestamp
+my_df <- make_data_frame(number_of_rows = 5000)  # run old function
+s <- Sys.time()-s                                # record runtime
+```
+
+```{r}
+new_data_frame <- function(number_of_rows) {
+  n = 1:number_of_rows  # index - loop unnecessary
+  x = n^2               # x square of n
+  y = cumsum(x)         # y running sum of x
+  z = lag(y, 1)         # z lags 1 place behind y
+  z[1] = 0              # first z is NA - replace with 0
+  a = (x+y+z)/3         # a is mean of x,y,z
+  
+  # collect in dataframe
+  output_df <- data.frame(n, x, y, z, a) 
+  return(output_df)  
+}
+
+t = Sys.time()                                   # record time stamp
+new_df = new_data_frame(number_of_rows = 5000)   # run new function
+t <- Sys.time()-t                                # record runtime
+```
+
+```{r}
+# does the new function work?
+print(all(new_df == my_df))
+# compare runtimes
+message(paste("Old function: ", s, sep = ""))
+message(paste("New function: ", t, sep = ""))
+```

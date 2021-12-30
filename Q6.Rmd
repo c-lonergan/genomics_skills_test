@@ -1,0 +1,52 @@
+---
+title: 'Skills Test: Question 6'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 6: For the following string of letters (dna), return:
+
+```{r}
+library(magrittr)
+set.seed(999)
+dna <- sample(x = c("A","T","C","G"), replace = T, size = 100) %>%
+  paste(collapse = '')
+```
+
+## 6.1: How many combinations of three successive letters exist?
+
+```{r}
+codons = c()                        # empty set for unique codons
+for (i in 1:(nchar(dna)-2)) {   
+  new_codon = substr(dna, i, i+2)   # sliding window of length 3
+  if (!(new_codon %in% codons)) {   # check if codon is in set
+    codons <- c(codons, new_codon)  # append new codon to set if unknown
+  }
+}
+```
+
+```{r}
+print(paste("There are ", length(codons), " unique codons in the DNA string.", sep = ""))
+```
+
+## 6.2: How many times does each of these combinations occur?
+
+```{r}
+library(stringr)                                        # need for str_count()
+
+num_matches = c()                                       # empty set
+for (codon in codons) {                                 # loop through each codon 
+  num_matches <- c(num_matches, str_count(dna, codon))  # appends number of matches for each codon
+}
+```
+
+```{r}
+df = data.frame(cbind(codons, num_matches))             # summarise counts in a data frame
+df
+```
+

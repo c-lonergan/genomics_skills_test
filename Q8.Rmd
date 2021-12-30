@@ -1,0 +1,113 @@
+---
+title: 'Skills Test: Question 8'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Write a function that takes a number (K) bigger than 10 and outputs all the numbers that are both palindromic and prime between 10 and K. This task may be performed in R or Python.
+
+## Palindrome function
+
+Stolen from ![here](https://xiith.com/r-program-to-check-a-number-is-a-palindrome-or-not/).
+
+```{r}
+# function to check if number is palindromic
+is_palindrome = function(n){
+    
+    rev = 0
+    num = n
+    
+    # while loop creates reverse number
+    while (n > 0) {
+      r <- n %% 10           
+      rev <- rev * 10 + r
+      n <- n %/% 10
+    }
+
+    # check if reverse is same as number
+    if (rev == num)
+    {
+      return(T)
+    }
+    else{
+      return(F)
+    }
+}
+```
+
+```{r}
+# check function works
+is_palindrome(101)
+is_palindrome(110)
+```
+
+## Prime function
+
+Stolen from ![here](https://stackoverflow.com/questions/19767408/prime-number-function-in-r).
+Removed `if (num == 2) {` term as this is redundant for the final function where `K>10`.
+
+```{r}
+is_prime <- function(num) {
+   # is num divisible by any number other than 1 and itself?
+   if (any(num %% 2:(num-1) == 0)) {
+      FALSE
+   } else { 
+      TRUE
+   }
+}
+
+```
+
+```{r}
+# check function works
+is_prime(17)
+is_prime(57)
+```
+
+## Final function
+
+```{r}
+pal_and_prime = function(K){
+  # some error handling
+  if (K != round(K)) {
+    message("Error: K is not an integer")
+    break
+  }
+  if (K<11) {
+    message("Error: K is too small")
+    break
+  }
+  
+  # empty set to append results to 
+  out_list = c()
+  
+  for (i in 10:K) {
+    # check prime first for efficiency
+    if (is_prime(i)) {
+      # add to set if also palindromic
+      if (is_palindrome(i)) {
+        out_list <- c(out_list, i)
+      } else {
+        next
+      }
+    } else {
+      next
+    }
+  }
+  return(out_list)
+}
+
+# test function works
+pal_and_prime(1000)
+```
+
+```{r}
+# test error handling
+pal_and_prime(11.1)
+pal_and_prime(9)
+```

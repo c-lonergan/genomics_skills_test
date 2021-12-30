@@ -1,0 +1,135 @@
+---
+title: 'Skills Test: Question 12'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The Breast Cancer Wisconsin (Diagnostic) Data Set can be downloaded from [kaggle.com]{https://www.kaggle.com/uciml/breast-cancer-wisconsin-data}. 
+We would like you to perform a 70:30 training/test split, train an XGboost model on the training split, and use it to predict the test data.
+
+To get a good model it may be necessary to perform feature engineering and feature reduction.
+
+We would like any data preprocessing to be done in R, but the model itself should be trained using Python. 
+Finally, we would like the results to passed back into R for visualisation. 
+Objects can be conveniently passed from R to Python and back using R’s Reticulate package, which interfaces well with RStudio.
+Please aim for a high AUC accuracy, ideally over 90%.
+
+```{r, message=FALSE}
+# install and load pROC for AUC
+#install.packages("pROC")
+library(pROC)
+```
+
+## Data Preprocessing
+
+```{r}
+# read data
+wisconsin = read.csv("data/wisconsin_breast_cancer.csv")
+```
+
+```{r}
+# check data
+summary(wisconsin)
+```
+
+```{r}
+# not sure where "X" column came from
+# remove "ID" column and "X" column
+wisconsin <- wisconsin[,c(-1,-33)]
+summary(wisconsin)
+```
+
+```{r}
+# check distribution of benign vs malignant
+barplot(c(nrow(wisconsin[wisconsin$diagnosis=="M",]),
+          nrow(wisconsin[wisconsin$diagnosis=="B",])),
+        main = "Barplot of Malignant vs. Benign",
+        col = c("blue", "orange"),
+        names.arg = c("M","B"),
+        xlab = "Diagnosis",
+        ylab = "Count")
+```
+
+Data slightly imbalanced - may need balancing.
+
+```{r}
+# convert M to 1 and B to 0 for XGBoost
+wisconsin$diagnosis[wisconsin$diagnosis=="M"] <- 1
+wisconsin$diagnosis[wisconsin$diagnosis=="B"] <- 0
+# set to numeric
+wisconsin$diagnosis <- as.numeric(wisconsin$diagnosis)
+```
+
+```{r}
+# min/max normalisation function
+min_max = function(x){
+  return( (x-min(x)) / (max(x)-min(x)) )
+}
+```
+
+```{r}
+# normalise numeric variables
+for (i in 2:ncol(wisconsin)) {
+  wisconsin[,i] <- min_max(wisconsin[,i])
+}
+summary(wisconsin)
+```
+
+Numeric variables scaled from 0 to 1
+
+```{r}
+# split data into training / test sets
+set.seed(101)                                           # make partition reproducible
+n = floor(0.7*nrow(wisconsin))                          # set training size to 70%
+train_rows = sample(seq_len(nrow(wisconsin)), size = n) # set random training samples
+training = wisconsin[train_rows,]                       # training partition
+testing = wisconsin[-train_rows,]                       # testing partition
+```
+
+```{r}
+# check "randomness"
+mean(training$diagnosis)
+mean(testing$diagnosis)
+```
+
+```{r}
+# export train/test data
+write.csv(x = training, file = "./data/wisconsin_training.csv")
+write.csv(x = testing, file = "./data/wisconsin_testing.csv")
+```
+
+Now run XGBoost by stepping through `Q12_XGBoost.ipynb`.
+
+## Results
+
+```{r}
+# read XGBoost output
+predictions = read.csv("./data/wisconsin_predictions.csv")
+predictions <- predictions[,2]
+predictions
+```
+
+```{r}
+# append to testing set
+testing$predictions = predictions
+# measure naive accuracy
+acc = 100*nrow(testing[testing$diagnosis == testing$predictions,])/nrow(testing)
+print(paste("XGBoost prediction accuracy: ", round(acc,2), "%", sep = ""))
+```
+
+```{r}
+# measure AUC
+res = roc(testing$diagnosis,testing$predictions)
+auc_acc = auc(res)
+auc_acc
+```
+
+```{r}
+# Visualise AUC
+plot.roc(res, main = paste("AUC: ", 100*round(auc_acc,4), "%", sep = ""))
+```

@@ -1,0 +1,49 @@
+---
+title: 'Skills Test: Question 9'
+author: "Charlie Lonergan"
+date: "18/10/2021"
+output: pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+You are sitting in a room and there is a party going on in the room next door. 
+Through the walls you hear everyone clink glasses (everyone clinks glasses with everyone else once). 
+You hear 28 distinct clinks. How many people were at the party? 
+Write a function to calculate how many clinks would be generated for any number of guests. 
+
+## Create functions
+
+This problem is an example of a [complete graph](https://en.wikipedia.org/wiki/Complete_graph). 
+The number of people can be represented by nodes, and the number of clinks by edges.
+
+For `n` nodes in a complete graph, the number of edges is `n(n-1)/2`, so given `k` edges there are `1+sqrt(1+8k)/2` edges (by the quadratic formula).
+
+```{r}
+# function returns how many clinks generated for any number of guests. 
+num_edges = function(n){
+  return(n*(n-1)/2)
+}
+```
+
+```{r}
+# inverse function returns how many guests generated number of clinks heard.
+num_nodes = function(k){
+  return((1+sqrt(1+8*k))/2)
+}
+```
+
+```{r}
+print(paste("There were ", num_nodes(28), " people at the party", sep = ""))
+```
+
+```{r}
+# calculate number of clinks for any number of people /
+# number of people for any number of clinks
+k = num_edges(1:25)
+n = num_nodes(k)
+cbind(n,k)
+```
+
